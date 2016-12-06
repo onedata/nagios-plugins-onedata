@@ -1,0 +1,167 @@
+
+#!/bin/sh
+
+##########################################################################
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+##########################################################################
+
+# This script parser the Oneprovider healthdata XML
+# Sample output of this endpoint is:
+
+#
+# <?xml version="1.0"?>
+# <healthdata date="2016/12/06 15:34:30" status="ok">
+#   <op_worker name="op_worker@node1.oneprovider.localhost" status="ok">
+#     <node_manager status="ok"/>
+#     <request_dispatcher status="ok"/>
+#     <datastore_worker status="ok"/>
+#     <dbsync_worker status="ok"/>
+#     <dns_worker status="ok"/>
+#     <file_deletion_worker status="ok"/>
+#     <fslogic_worker status="ok"/>
+#     <monitoring_worker status="ok"/>
+#     <session_manager_worker status="ok"/>
+#     <subscriptions_worker status="ok"/>
+#     <dns_listener status="ok"/>
+#     <gui_listener status="ok"/>
+#     <nagios_listener status="ok"/>
+#     <protocol_listener status="ok"/>
+#     <provider_listener status="ok"/>
+#     <redirector_listener status="ok"/>
+#     <rest_listener status="ok"/>
+#   </op_worker>
+# </healthdata>
+#
+
+#
+# Command line tools
+#
+CURL=/usr/bin/curl
+XMLLINT=/usr/bin/xmllint
+
+set -e
+
+#
+# Nagios status codes
+#
+NAGIOS_STATUS_OK=0 # OK
+NAGIOS_STATUS_WARNING=1 # UP or DOWN/UNREACHABLE*
+NAGIOS_STATUS_CRITICAL=2 #  DOWN/UNREACHABLE
+NAGIOS_STATUS_UNKNOWN=3 # DOWN/UNREACHABLE
+
+
+#
+# Default timeout 10 seconds
+#
+TIMEOUT=10
+
+#
+# Onedata endpoint variables
+#
+ONEDATA_HOST=
+ONEDATA_PORT=6666
+ONEDATA_NAGIOS_ENDPOINT=
+
+function printHelp {
+    echo "Nagios plugin for Onezone service of Onedata"
+    echo ""
+    echo "Usage:"
+    echo "$0 [-h|--help] [-t|--timeout <timeout>] [-p|--port <port>]"
+    echo "                    [-H|--hostname <hostname>] [-u|--url <endpoint>]" 
+    echo ""
+    echo " -h|--help    - Prints this help"
+    echo " -t|--timeout - Determines the entire connection timeout (Default: 10 seconds)"
+    echo " -H|--host    - The Onedata hostname"
+    echo " -p|--port    - The Onedata Nagios port (Default: 6666)"
+    echo " -u|--url     - The complete Onedata Nagios endpoint"
+}
+
+
+while [ "x$1" != "x" ]; do
+    case "$1" in
+        "-h"|"--help")
+            printHelp
+            shift
+            ;;
+        "-t"|"--timeout")
+            TIMEOUT="$2"
+            shift 2
+            ;;
+        "-H"|"--hostname")
+            ONEDATA_HOST="$2"
+            shift 2
+            ;;
+        "-p"|"--port")
+            ONEDATA_PORT="$2"
+            shift 2
+            ;;
+        "-u"|"--url")
+            ONEDATA_NAGIOS_ENDPOINT="$2"
+            shift 2
+            ;;
+        *)
+            echo "Invalid usage!"
+            printHelp
+            exit 2
+    esac
+done
+
+
+if [  "x${ONEDATA_HOST}" == "x" ] && [ "x${ONEDATA_NAGIOS_ENDPOINT}" == "x" ]; then
+    echo "Error: Onedata host or endpoint not provided"
+    printHelp
+    exit 2
+fi
+
+# Build the Onedata Nagios endpoint url
+if [ "x${ONEDATA_NAGIOS_ENDPOINT}" == "x" ]; then
+    ONEDATA_NAGIOS_ENDPOINT="http://${ONEDATA_HOST}:${ONEDATA_PORT}/nagios"
+fi
+
+# Query Onedata Nagios endpoint
+HEALTHDATA=`$CURL -sSk --max-time ${TIMEOUT} ${ONEDATA_NAGIOS_ENDPOINT}`
+
+# Check overall status
+OVERALL_STATUS=`echo $HEALTHDATA | $XMLLINT --xpath 'string(//healthdata/@status)' - 2>/dev/null`
+
+# Count all workers
+ALL_WORKERS=`echo $HEALTHDATA | $XMLLINT --xpath '//healthdata/oz_worker[@status="ok"]/@name' - 2>/dev/null | sed "s|^ name=||" | sed "s|\sname=|\n|g" | sed "s|\"||g"`
+
+ALL_WORKERS_COUNT=$(echo "$ALL_WORKERS" | wc -l)
+
+# If overrall service status is not "ok" check which workers are reporting
+# errors
+if [ "x$OVERALL_STATUS" != "xok" ]; then
+
+    # Find the op_workers reporting errors
+    ERROR_WORKERS=`echo $HEALTHDATA | $XMLLINT --xpath '//healthdata/oz_worker[@status="error"]/@name' - 2>/dev/null | sed "s|^ name=||" | sed "s|\sname=|, |g" | sed "s|\"||g"`
+    ERROR_WORKERS_COUNT=$(echo "$ERROR_WORKERS" | wc -l)
+
+    # Find the op_workers reporting out_of_sync
+    OUTOFSYNC_WORKERS=`echo $HEALTHDATA | $XMLLINT --xpath '//healthdata/oz_worker[@status="out_of_sync"]/@name' - 2>/dev/null | sed "s|^ name=||" | sed "s|\sname=|, |g" | sed "s|\"||g"`
+
+    # If all workers report errors, return Critical error status
+    # if only some return warning
+    if [ "$ERROR_WORKERS_COUNT" -eq "$ALL_WORKERS_COUNT" ]; then
+        echo "Error - all Onezone workers are down: $ERROR_WORKERS"
+        exit $NAGIOS_STATUS_CRITICAL
+    else
+        echo "Warning - the following Onezone workers are down: $ERROR_WORKERS"
+        exit $NAGIOS_STATUS_WARNING
+    fi
+fi
+
+echo "OK - all Onezone workers are ok."
+
+exit $NAGIOS_STATUS_OK
+

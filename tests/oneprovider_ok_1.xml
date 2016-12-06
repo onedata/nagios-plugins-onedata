@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<healthdata date="2016/12/06 15:38:50" status="ok">
+  <op_worker name="op_worker@node1.oneprovider.localhost" status="ok">
+    <node_manager status="ok"/>
+    <request_dispatcher status="ok"/>
+    <datastore_worker status="ok"/>
+    <dbsync_worker status="ok"/>
+    <dns_worker status="ok"/>
+    <file_deletion_worker status="ok"/>
+    <fslogic_worker status="ok"/>
+    <monitoring_worker status="ok"/>
+    <session_manager_worker status="ok"/>
+    <subscriptions_worker status="ok"/>
+    <dns_listener status="ok"/>
+    <gui_listener status="ok"/>
+    <nagios_listener status="ok"/>
+    <protocol_listener status="ok"/>
+    <provider_listener status="ok"/>
+    <redirector_listener status="ok"/>
+    <rest_listener status="ok"/>
+  </op_worker>
+</healthdata>

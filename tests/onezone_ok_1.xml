@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<healthdata date="2016/11/24 13:10:02" status="ok">
+  <oz_worker name="oz_worker@node1.onezone.localhost" status="ok">
+    <node_manager status="ok"/>
+    <request_dispatcher status="ok"/>
+    <changes_worker status="ok"/>
+    <datastore_worker status="ok"/>
+    <dns_worker status="ok"/>
+    <groups_graph_caches_worker status="ok"/>
+    <ozpca_worker status="ok"/>
+    <subscriptions_worker status="ok"/>
+    <dns_listener status="ok"/>
+    <gui_listener status="ok"/>
+    <nagios_listener status="ok"/>
+    <oz_redirector_listener status="ok"/>
+    <rest_listener status="ok"/>
+    <subscriptions_wss_listener status="ok"/>
+  </oz_worker>
+</healthdata>
