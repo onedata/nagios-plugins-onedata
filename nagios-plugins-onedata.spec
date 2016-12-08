@@ -1,16 +1,16 @@
-%define dir %{_libdir}/nagios/plugins/onedata
+%define dir %{_libdir}/argo-monitoring/probes/org.onedata
 
 Summary: Nagios plugins for Onedata services
 Name: nagios-plugins-onedata
 Version: 3.0.0
-Release: 2%{?dist}
+Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch: noarch
 Requires: curl
-Requires: xmllint
+Requires: libxml2
 %description
 
 %prep
@@ -31,5 +31,5 @@ rm -rf $RPM_BUILD_ROOT
 %{dir}
 
 %changelog
-* Wed Dec 07 2016 Bartosz Kryza <bkryza@agh.edu.pl> - 3.0.0-2%{?dist}
+* Wed Dec 07 2016 Bartosz Kryza <bkryza@agh.edu.pl> - 3.0.0-1%{?dist}
 - Initial implementation
