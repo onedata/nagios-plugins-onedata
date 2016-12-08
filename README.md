@@ -42,16 +42,79 @@ src/check_oneprovider [-h|--help] [-t|--timeout <timeout>] [-p|--port <port>]
  -p|--port    - The Onedata Nagios port (Default: 6666)
  -u|--url     - The complete Onedata Nagios endpoint
 ```
+### How the probes work
+Each of Onedata services (Onezone, Oneprovider) expose an endpoint with health data in XML for all worker processes running on a given site (each Onedata service can have mutliple worker processes running in parallel for higher performance and reliability).
+
+An example XML output for a Onezone service is below:
+```xml
+<?xml version="1.0"?>
+<healthdata date="2016/11/24 13:10:02" status="error">
+  <oz_worker name="oz_worker@node1.onezone.localhost" status="ok">
+    <node_manager status="ok"/>
+    <request_dispatcher status="ok"/>
+    <changes_worker status="ok"/>
+    <datastore_worker status="ok"/>
+    <dns_worker status="ok"/>
+    <groups_graph_caches_worker status="ok"/>
+    <ozpca_worker status="ok"/>
+    <subscriptions_worker status="ok"/>
+    <dns_listener status="ok"/>
+    <gui_listener status="ok"/>
+    <nagios_listener status="ok"/>
+    <oz_redirector_listener status="ok"/>
+    <rest_listener status="ok"/>
+    <subscriptions_wss_listener status="ok"/>
+  </oz_worker>
+  <oz_worker name="oz_worker@node2.onezone.localhost" status="error">
+    <node_manager status="ok"/>
+    <request_dispatcher status="ok"/>
+    <changes_worker status="ok"/>
+    <datastore_worker status="ok"/>
+    <dns_worker status="ok"/>
+    <groups_graph_caches_worker status="error"/>
+    <ozpca_worker status="ok"/>
+    <subscriptions_worker status="ok"/>
+    <dns_listener status="ok"/>
+    <gui_listener status="ok"/>
+    <nagios_listener status="ok"/>
+    <oz_redirector_listener status="error"/>
+    <rest_listener status="ok"/>
+    <subscriptions_wss_listener status="ok"/>
+  </oz_worker>
+</healthdata>
+```
+
+In case all workers are working and the healthdata status is `ok` the probe will return `OK` status.
+
+If all of the workers are down and return `error` status the probe will return a `CRITICAL` status code and in case at least one worker is still running the status will be `WARNING`.
 
 
 ## Building CentOS RPM
-To build the RPM's simply run the default `Makefile`:
 
+Building can be done on a Centos 6 Docker container:
 ```bash
+#
+# Build the RPM from scratch 
+#
+$ docker run -ti centos:6 /bin/bash
+$ yum install git rpm-build
+$ cd /root
+$ mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+$ git clone https://github.com/onedata/nagios-plugins-onedata
+$ cd nagios-plugins-onedata
 $ make
+$ cp nagios-plugins-onedata*tar.gz ../rpmbuild/SOURCES
+$ rpmbuild -bb nagios-plugins-onedata.spec
+
+#
+# Install and test the RPM
+#
+$ cd ../rpmbuild/RPMS/noarch
+$ rpm -Uvh nagios-plugins-onedata-3.0.0-1.el6.noarch.rpm
+$ /usr/lib64/argo-monitoring/probes/org.onedata/check_onezone -h
 ```
 
-## Running plugin unit tests
+## Running probe unit tests
 
 First create and start the Docker, which serves the mockup healthdata XML files:
 

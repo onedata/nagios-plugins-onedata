@@ -91,6 +91,7 @@ while [ "x$1" != "x" ]; do
     case "$1" in
         "-h"|"--help")
             printHelp
+            exit 0
             shift
             ;;
         "-t"|"--timeout")
