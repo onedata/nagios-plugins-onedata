@@ -45,6 +45,8 @@ src/check_oneprovider [-h|--help] [-t|--timeout <timeout>] [-p|--port <port>]
 ### How the probes work
 Each of Onedata services (Onezone, Oneprovider) expose an endpoint with health data in XML for all worker processes running on a given site (each Onedata service can have mutliple worker processes running in parallel for higher performance and reliability).
 
+By default all Onedata service provide this information on port `6666` so it must be ensured that this port is opened on the Onedata sites to the nodes where Nagios monitoring probes are executed.
+
 An example XML output for a Onezone service is below:
 ```xml
 <?xml version="1.0"?>
