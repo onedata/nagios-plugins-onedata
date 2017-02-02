@@ -69,6 +69,11 @@ ONEDATA_HOST=
 ONEDATA_PORT=6666
 ONEDATA_NAGIOS_ENDPOINT=
 
+#
+# TMP file
+#
+TMP_FILE=/tmp/check_onezone.$$
+
 function printHelp {
     echo "Nagios plugin for Onezone service of Onedata"
     echo ""
@@ -126,30 +131,34 @@ if [ "x${ONEDATA_NAGIOS_ENDPOINT}" == "x" ]; then
 fi
 
 # Query Onedata Nagios endpoint
-HEALTHDATA=`$CURL -sSk --max-time ${TIMEOUT} ${ONEDATA_NAGIOS_ENDPOINT}`
+HEALTHDATA=`$CURL -sSk --max-time ${TIMEOUT} -o ${TMP_FILE} ${ONEDATA_NAGIOS_ENDPOINT}`
 
 # Check overall status
-OVERALL_STATUS=`echo $HEALTHDATA | $XMLLINT --xpath 'string(//healthdata/@status)' - 2>/dev/null`
+OVERALL_STATUS=`$XMLLINT --shell ${TMP_FILE} <<< 'xpath string(//healthdata/@status)' 2>/dev/null | grep "Object is a string" | sed "s|^/ > Object is a string : ||"`
 
 # Count all workers
-ALL_WORKERS=`echo $HEALTHDATA | $XMLLINT --xpath '//healthdata/oz_worker[@status="ok"]/@name' - 2>/dev/null | sed "s|^ name=||" | sed "s|\sname=|\n|g" | sed "s|\"||g"`
-
-ALL_WORKERS_COUNT=$(echo "$ALL_WORKERS" | wc -l)
+ALL_WORKERS=`$XMLLINT --shell ${TMP_FILE} <<< 'xpath //healthdata/oz_worker[@status="ok"]/@name' 2>/dev/null | grep "content=" || echo`
+if [ -z "$ALL_WORKERS" ]; then
+    ALL_WORKERS_COUNT=0
+else
+    ALL_WORKERS_COUNT=$(echo "$ALL_WORKERS" | wc -l)
+fi
 
 # If overrall service status is not "ok" check which workers are reporting
 # errors
 if [ "x$OVERALL_STATUS" != "xok" ]; then
 
     # Find the op_workers reporting errors
-    ERROR_WORKERS=`echo $HEALTHDATA | $XMLLINT --xpath '//healthdata/oz_worker[@status="error"]/@name' - 2>/dev/null | sed "s|^ name=||" | sed "s|\sname=|, |g" | sed "s|\"||g"`
-    ERROR_WORKERS_COUNT=$(echo "$ERROR_WORKERS" | wc -l)
+    ERROR_WORKERS=`echo $HEALTHDATA | $XMLLINT --shell ${TMP_FILE} <<< 'xpath //healthdata/oz_worker[@status="error"]/@name' 2>/dev/null | grep "content=" || echo`
 
     # Find the op_workers reporting out_of_sync
-    OUTOFSYNC_WORKERS=`echo $HEALTHDATA | $XMLLINT --xpath '//healthdata/oz_worker[@status="out_of_sync"]/@name' - 2>/dev/null | sed "s|^ name=||" | sed "s|\sname=|, |g" | sed "s|\"||g"`
+    OUTOFSYNC_WORKERS=`echo $HEALTHDATA | $XMLLINT --shell ${TMP_FILE} <<< 'xpath //healthdata/oz_worker[@status="out_of_sync"]/@name' 2>/dev/null | grep "content=" || echo`
+
+    rm -f $TMP_FILE
 
     # If all workers report errors, return Critical error status
     # if only some return warning
-    if [ "$ERROR_WORKERS_COUNT" -eq "$ALL_WORKERS_COUNT" ]; then
+    if [ "0" -eq "$ALL_WORKERS_COUNT" ]; then
         echo "Error - all Onezone workers are down: $ERROR_WORKERS"
         exit $NAGIOS_STATUS_CRITICAL
     else
@@ -157,6 +166,8 @@ if [ "x$OVERALL_STATUS" != "xok" ]; then
         exit $NAGIOS_STATUS_WARNING
     fi
 fi
+
+rm -f $TMP_FILE
 
 echo "OK - all Onezone workers are ok."
 
