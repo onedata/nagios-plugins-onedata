@@ -2,7 +2,7 @@
 
 Summary: Nagios plugins for Onedata services
 Name: nagios-plugins-onedata
-Version: 3.1.0
+Version: 3.2.0
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring
@@ -31,6 +31,8 @@ rm -rf $RPM_BUILD_ROOT
 %{dir}
 
 %changelog
+* Sat Feb 11 2017 Emir Imamagic <eimamagi@srce.hr> - 3.2.0-1%{?dist}
+- Exit gracefully in case of curl failure
 * Thu Feb 02 2017 Emir Imamagic <eimamagi@srce.hr> - 3.1.0-1%{?dist}
 - Changed probes to be CentOS 6 compatible
 - Modified logic for ERROR state
