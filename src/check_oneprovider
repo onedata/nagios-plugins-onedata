@@ -69,7 +69,7 @@ TIMEOUT=10
 # Onedata endpoint variables
 #
 ONEDATA_HOST=
-ONEDATA_PORT=6666
+ONEDATA_PORT=443
 ONEDATA_NAGIOS_ENDPOINT=
 
 #
@@ -87,7 +87,7 @@ function printHelp {
     echo " -h|--help    - Prints this help"
     echo " -t|--timeout - Determines the entire connection timeout (Default: 10 seconds)"
     echo " -H|--host    - The Onedata hostname"
-    echo " -p|--port    - The Onedata Nagios port (Default: 6666)"
+    echo " -p|--port    - The Onedata Nagios port (Default: 443)"
     echo " -u|--url     - The complete Onedata Nagios endpoint"
 }
 

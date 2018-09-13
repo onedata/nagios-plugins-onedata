@@ -8,7 +8,7 @@ These Nagios probes have the following requirements in order to work properly:
 - Bash
 - cURL
 - xmllint (from libxml2-utils)
-- access to port `6666` on machine hosting Onedata service
+- access to port `443` on machine hosting Onedata service
 
 ## Running the probes
 
