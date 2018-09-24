@@ -27,7 +27,7 @@ script:
 # First, start the build container
   - docker run --name build_container -d -ti -v $PWD:/tmp -w /tmp $OS /bin/bash -c 'while true ; do sleep 1000 ; done'
 # Now, install prerequisites for the build
-  - docker exec -i -w /root build_container yum install -y rpm-build
+  - docker exec -i --workdir /root build_container yum install -y rpm-build
 # and ensure the build paths are present
   - docker exec -i -w /root bash -c 'mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}'
 # make the tarball  
