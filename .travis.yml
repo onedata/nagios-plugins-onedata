@@ -60,7 +60,7 @@ deploy:
   provider: releases
   api_key:
   file:
-    - nagios-plugins-onedata-3.2.0-1.el6.noarch.rpm
+    - nagios-plugins-onedata-3.2.0-1.el${OS_MAJOR_VERSION}.noarch.rpm
   on:
     tags: true
 after_deploy:
