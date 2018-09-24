@@ -42,7 +42,7 @@ script:
 # now build the rpm
   - docker exec -i -w /tmp build_container rpmbuild -bb nagios-plugins-onedata.spec
 # and install it
-  - docker exec -i -w /tmp build_container rpmbuild rpm -Uvh nagios-plugins-onedata-3.0.0-1.el6.noarch.rpm
+  - docker exec -i -w /tmp build_container rpm -Uvh nagios-plugins-onedata-3.0.0-1.el6.noarch.rpm
 # now see if it runs
   - docker exec -ti build_container bash /usr/lib64/argo-monitoring/probes/org.onedata/check_onezone -h
 # if it works, get the rpm we just built to the shared volume
