@@ -46,7 +46,7 @@ script:
 # now see if it runs
   - docker exec -ti build_container bash /usr/lib64/argo-monitoring/probes/org.onedata/check_onezone -h
 # if it works, get the rpm we just built to the shared volume
-  - docker exec build_container cp /root/rpmbuild/RPMS/noarch/*.rpm /tmp
+  - docker exec -ti build_container bash -c 'cp -v /root/rpmbuild/RPMS/noarch/*.rpm /tmp'
   - tests/test.sh
 before_cache:
 after_success:
