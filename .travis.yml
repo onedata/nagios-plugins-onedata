@@ -6,9 +6,10 @@ language: ruby
 rvm:
   - 2.4.1
 env:
+    - OS_NAME=centos
   matrix:
-    - OS="centos:6"
-    - OS="centos:7"
+    - OS_MAJOR_VERSION=6
+    - OS_MAJOR_VERSION=7
 addons:
   apt:
     packages:
@@ -30,7 +31,7 @@ before_script:
 script:
 # Actual testing of the product
 # First, start the build container
-  - docker run --name build_container -d -ti -v $PWD:/tmp -w /tmp $OS /bin/bash -c 'while true ; do sleep 1000 ; done'
+  - docker run --name build_container -d -ti -v $PWD:/tmp -w /tmp $OS:$OS_MAJOR_VERSION /bin/bash -c 'while true ; do sleep 1000 ; done'
 # Now, install prerequisites for the build
   - docker exec -i -w /root build_container yum install -y rpm-build make
 # and ensure the build paths are present
@@ -42,7 +43,7 @@ script:
 # now build the rpm
   - docker exec -i -w /tmp build_container rpmbuild -bb nagios-plugins-onedata.spec
 # and install it
-  - docker exec -i -w /root/rpmbuild/RPMS/noarch build_container rpm -Uvh nagios-plugins-onedata-3.2.0-1.el6.noarch.rpm
+  - docker exec -i -w /root/rpmbuild/RPMS/noarch build_container rpm -Uvh nagios-plugins-onedata-3.2.0-1.el${OS_MAJOR_VERSION}.noarch.rpm
 # now see if it runs
   - docker exec -ti build_container bash /usr/lib64/argo-monitoring/probes/org.onedata/check_onezone -h
 # if it works, get the rpm we just built to the shared volume
