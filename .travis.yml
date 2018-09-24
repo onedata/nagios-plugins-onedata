@@ -14,6 +14,10 @@ addons:
     packages:
       - shellcheck
 before_install:
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update
+  - sudo apt-get -y install docker-ce
   - docker --version
 install:
   - gem install mdl
@@ -32,7 +36,7 @@ script:
 # and ensure the build paths are present
   - docker exec -i -w /root build_container bash -c 'mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}'
 # make the tarball  
-  - docker exec -i build_container -w /tmp/ make
+  - docker exec -i -w /tmp build_container make
 # and copy it to the place rpmbuild expects it
   - docker exec -i -w /tmp build_container cp nagios-plugins-onedata*tar.gz /root/rpmbuild/SOURCES
 # now build the rpm
