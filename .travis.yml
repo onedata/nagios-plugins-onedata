@@ -5,6 +5,10 @@ services:
 language: ruby
 rvm:
   - 2.4.1
+env:
+  matrix:
+    - OS="centos:6"
+    - OS="centos:7"
 addons:
   apt:
     packages:
@@ -15,13 +19,13 @@ install:
 before_script:
 # syntax, linting and pre-test stages
   - mdl -s relaxed README.md
-  - shellcheck src/check_oneprovider
-  - shellcheck src/check_onezone
+  - shellcheck -e SC2034 -e SC2181 src/check_oneprovider
+  - shellcheck -e SC2034 -e SC2181 src/check_onezone
   - docker build -t onedata-nagios-test -f Dockerfile.nginx .
 script:
 # Actual testing of the product
 # First, start the build container
-  - docker run --name build_container -d -ti -v $PWD:/tmp -w /tmp centos:6 /bin/bash -c 'while true sleep 1000'
+  - docker run --name build_container -d -ti -v $PWD:/tmp -w /tmp $OS /bin/bash -c 'while true ; do sleep 1000 ; done'
 # Now, install prerequisites for the build
   - docker exec -i -w /root build_container yum install -y rpm-build
 # and ensure the build paths are present
@@ -41,6 +45,9 @@ script:
   - tests/test.sh
 before_cache:
 after_success:
+# create the rpm with the correct name, pulling out version and OS
+# WIP on https://github.com/onedata/nagios-plugins-onedata/issues/8
+  - echo "not implemented yet"
 after_failure:
 before_deploy:
 deploy:
