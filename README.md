@@ -109,7 +109,7 @@ Building can be done on a Centos 6 Docker container:
 # Build the RPM from scratch
 #
 docker run -ti centos:6 /bin/bash
-yum install git rpm-build
+yum install -y git rpm-build
 cd /root
 mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
 git clone https://github.com/onedata/nagios-plugins-onedata
