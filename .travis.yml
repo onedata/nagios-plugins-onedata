@@ -32,7 +32,7 @@ before_script:
 script:
 # Actual testing of the product
 # First, start the build container
-  - docker run --name build_container -d -ti -v $PWD:/tmp -w /tmp $OS:$OS_MAJOR_VERSION /bin/bash -c 'while true ; do sleep 1000 ; done'
+  - docker run --name build_container -d -ti -v $PWD:/tmp -w /tmp $OS_NAME:$OS_MAJOR_VERSION /bin/bash -c 'while true ; do sleep 1000 ; done'
 # Now, install prerequisites for the build
   - docker exec -i -w /root build_container yum install -y rpm-build make
 # and ensure the build paths are present
