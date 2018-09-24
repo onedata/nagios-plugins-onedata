@@ -6,6 +6,7 @@ language: ruby
 rvm:
   - 2.4.1
 env:
+  global:
     - OS_NAME=centos
   matrix:
     - OS_MAJOR_VERSION=6
