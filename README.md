@@ -30,7 +30,7 @@ src/check_oneprovider [-h|--help] [-t|--timeout <timeout>] [-p|--port <port>]
  -h|--help    - Prints this help
  -t|--timeout - Determines the entire connection timeout (Default: 10 seconds)
  -H|--host    - The Onedata hostname
- -p|--port    - The Onedata Nagios port (Default: 6666)
+ -p|--port    - The Onedata Nagios port (Default: 443)
  -u|--url     - The complete Onedata Nagios endpoint
 ```
 
@@ -46,7 +46,7 @@ src/check_oneprovider [-h|--help] [-t|--timeout <timeout>] [-p|--port <port>]
  -h|--help    - Prints this help
  -t|--timeout - Determines the entire connection timeout (Default: 10 seconds)
  -H|--host    - The Onedata hostname
- -p|--port    - The Onedata Nagios port (Default: 6666)
+ -p|--port    - The Onedata Nagios port (Default: 443)
  -u|--url     - The complete Onedata Nagios endpoint
 ```
 
@@ -56,7 +56,7 @@ Each of Onedata services (Onezone, Oneprovider) expose an endpoint with health d
 XML for all worker processes running on a given site (each Onedata service can have
 mutliple worker processes running in parallel for higher performance and reliability).
 
-By default all Onedata service provide this information on port `6666` so it must be ensured that this port is opened on the Onedata sites to the nodes where Nagios monitoring probes are executed.
+By default all Onedata service provide this information on port `443` so it must be ensured that this port is opened on the Onedata sites to the nodes where Nagios monitoring probes are executed.
 
 An example XML output for a Onezone service is below:
 
