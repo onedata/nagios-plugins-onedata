@@ -14,7 +14,7 @@ install:
   - gem install mdl
 before_script:
 # syntax, linting and pre-test stages
-  - mdl README.md
+  - mdl -s relaxed README.md
   - shellcheck src/check_oneprovider
   - shellcheck src/check_onezone
   - docker build -t onedata-nagios-test -f Dockerfile.nginx .
