@@ -1,5 +1,7 @@
 # nagios-plugins-onedata
 
+[![Build Status](https://api.travis-ci.org/onedata/nagios-plugins-onedata.svg?branch=master)](https://travis-ci.org/onedata/nagios-plugins-onedata)
+
 This repository contains Nagios plugins for testing Onedata services availability,
 namely `Oneprovider` and `Onezone` services.
 
