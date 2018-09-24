@@ -1,5 +1,6 @@
 #!/bin/bash
 
+set -e
 ##########################################################################
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -134,7 +135,7 @@ if [ "x${ONEDATA_NAGIOS_ENDPOINT}" == "x" ]; then
 fi
 
 # Query Onedata Nagios endpoint
-HEALTHDATA=`$CURL -sSk --max-time ${TIMEOUT} -o ${TMP_FILE} ${ONEDATA_NAGIOS_ENDPOINT} 2>&1`
+HEALTHDATA=$("${CURL}" -sSk --max-time "${TIMEOUT}" -o "${TMP_FILE}" "${ONEDATA_NAGIOS_ENDPOINT}" 2>&1)
 
 if [ $? -ne 0 ]; then
     echo "Error fetching health data: $HEALTHDATA"
@@ -142,10 +143,10 @@ if [ $? -ne 0 ]; then
 fi
 
 # Check overall status
-OVERALL_STATUS=`$XMLLINT --shell ${TMP_FILE} <<< 'xpath string(//healthdata/@status)' 2>/dev/null | grep "Object is a string" | sed "s|^/ > Object is a string : ||"`
+OVERALL_STATUS=$("${XMLLINT}" --shell ${TMP_FILE} <<< 'xpath string(//healthdata/@status)' 2>/dev/null | grep "Object is a string" | sed "s|^/ > Object is a string : ||")
 
 # Count all workers
-ALL_WORKERS=`$XMLLINT --shell ${TMP_FILE} <<< 'xpath //healthdata/op_worker[@status="ok"]/@name' 2>/dev/null | grep "content=" || echo`
+ALL_WORKERS=$("${XMLLINT}" --shell "${TMP_FILE}" <<< 'xpath //healthdata/op_worker[@status="ok"]/@name' 2>/dev/null | grep "content=" || echo)
 if [ -z "$ALL_WORKERS" ]; then
     ALL_WORKERS_COUNT=0
 else
@@ -156,10 +157,10 @@ fi
 # errors
 if [ "x$OVERALL_STATUS" != "xok" ]; then
     # Find the op_workers reporting errors
-    ERROR_WORKERS=`$XMLLINT --shell ${TMP_FILE} <<< 'xpath //healthdata/op_worker[@status="error"]/@name' 2>/dev/null | grep "content=" || echo`
+    ERROR_WORKERS=$("${XMLLINT}" --shell "${TMP_FILE}" <<< 'xpath //healthdata/op_worker[@status="error"]/@name' 2>/dev/null | grep "content=" || echo)
 
     # Find the op_workers reporting out_of_sync
-    OUTOFSYNC_WORKERS=`$XMLLINT --shell ${TMP_FILE} <<< 'xpath //healthdata/op_worker[@status="out_of_sync"]/@name' 2>/dev/null | grep "content=" || echo`
+    OUTOFSYNC_WORKERS=$("${XMLLINT}" --shell "${TMP_FILE}" <<< 'xpath //healthdata/op_worker[@status="out_of_sync"]/@name' 2>/dev/null | grep "content=" || echo)
 
     rm -f $TMP_FILE
 

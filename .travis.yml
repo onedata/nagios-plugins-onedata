@@ -1,0 +1,54 @@
+---
+sudo: required
+services:
+  - docker
+language: ruby
+rvm:
+  - 2.4.1
+addons:
+  apt:
+    packages:
+      - shellcheck
+before_install:
+install:
+  - gem install mdl
+before_script:
+# syntax, linting and pre-test stages
+  - mdl -s relaxed README.md
+  - shellcheck src/check_oneprovider
+  - shellcheck src/check_onezone
+  - docker build -t onedata-nagios-test -f Dockerfile.nginx .
+script:
+# Actual testing of the product
+# First, start the build container
+  - docker run --name build_container -d -ti -v $PWD:/tmp -w /tmp centos:6 /bin/bash -c 'while true sleep 1000'
+# Now, install prerequisites for the build
+  - docker exec -i -w /root build_container yum install -y rpm-build
+# and ensure the build paths are present
+  - docker exec -i -w /root bash -c 'mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}'
+# make the tarball  
+  - docker exec -i build_container -w /tmp/ make
+# and copy it to the place rpmbuild expects it
+  - docker exec -i -w /tmp build_container cp nagios-plugins-onedata*tar.gz /root/rpmbuild/SOURCES
+# now build the rpm
+  - docker exec -i -w /tmp build_container rpmbuild -bb nagios-plugins-onedata.spec
+# and install it
+  - docker exec -i -w /tmp build_container rpmbuild rpm -Uvh nagios-plugins-onedata-3.0.0-1.el6.noarch.rpm
+# now see if it runs
+  - docker exec -ti build_container bash /usr/lib64/argo-monitoring/probes/org.onedata/check_onezone -h
+# if it works, get the rpm we just built to the shared volume
+  - docker exec build_container cp /root/rpmbuild/RPMS/noarch/*.rpm /tmp
+  - tests/test.sh
+before_cache:
+after_success:
+after_failure:
+before_deploy:
+deploy:
+  provider: releases
+  api_key:
+  file:
+    - nagios-plugins-onedata-3.2.0-1.el6.noarch.rpm
+  on:
+    tags: true
+after_deploy:
+after_script:
