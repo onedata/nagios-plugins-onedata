@@ -21,7 +21,7 @@ before_script:
   - mdl -s relaxed README.md
   - shellcheck -e SC2034 -e SC2181 src/check_oneprovider
   - shellcheck -e SC2034 -e SC2181 src/check_onezone
-  - docker build -t onedata-nagios-test -f Dockerfile.nginx .
+  - docker build -t onedata-nagios-test -f docker/Dockerfile.nginx .
 script:
 # Actual testing of the product
 # First, start the build container
