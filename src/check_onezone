@@ -126,7 +126,7 @@ fi
 
 # Build the Onedata Nagios endpoint url
 if [ "x${ONEDATA_NAGIOS_ENDPOINT}" == "x" ]; then
-    ONEDATA_NAGIOS_ENDPOINT="http://${ONEDATA_HOST}:${ONEDATA_PORT}/nagios"
+    ONEDATA_NAGIOS_ENDPOINT="https://${ONEDATA_HOST}:${ONEDATA_PORT}/nagios"
 fi
 
 # Query Onedata Nagios endpoint
