@@ -157,7 +157,7 @@ fi
 # errors
 if [ "x$OVERALL_STATUS" != "xok" ]; then
     # Find the op_workers reporting errors
-    ERROR_WORKERS=$("${XMLLINT}" --shell "${TMP_FILE}" <<< 'xpath //healthdata/op_worker[@status="error"]/@name' 2>/dev/null | grep "content=" || echo)
+    ERROR_WORKERS=$("${XMLLINT}" --shell "${TMP_FILE}" <<< 'xpath //healthdata/op_worker[@status="error"]/@name' 2>/dev/null | grep "content=" | sed "s|content=||" | awk -v ORS=', ' '{print $1}' | sed 's/, $//' || echo)
 
     # Find the op_workers reporting out_of_sync
     OUTOFSYNC_WORKERS=$("${XMLLINT}" --shell "${TMP_FILE}" <<< 'xpath //healthdata/op_worker[@status="out_of_sync"]/@name' 2>/dev/null | grep "content=" || echo)
