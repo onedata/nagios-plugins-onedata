@@ -37,14 +37,14 @@ script:
   - docker exec -i -w /root build_container yum install -y rpm-build make
 # and ensure the build paths are present
   - docker exec -i -w /root build_container bash -c 'mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}'
-# make the tarball  
+# make the tarball
   - docker exec -i -w /tmp build_container make
 # and copy it to the place rpmbuild expects it
   - docker exec -i -w /tmp build_container cp nagios-plugins-onedata*tar.gz /root/rpmbuild/SOURCES
 # now build the rpm
   - docker exec -i -w /tmp build_container rpmbuild -bb nagios-plugins-onedata.spec
 # and install it
-  - docker exec -i -w /root/rpmbuild/RPMS/noarch build_container rpm -Uvh nagios-plugins-onedata-3.2.0-1.el${OS_MAJOR_VERSION}.noarch.rpm
+  - docker exec -i -w /root/rpmbuild/RPMS/noarch build_container rpm -Uvh nagios-plugins-onedata-${TRAVIS_TAG}-1.el${OS_MAJOR_VERSION}.noarch.rpm
 # now see if it runs
   - docker exec -ti build_container bash /usr/lib64/argo-monitoring/probes/org.onedata/check_onezone -h
 # if it works, get the rpm we just built to the shared volume
@@ -60,8 +60,10 @@ before_deploy:
 deploy:
   provider: releases
   api_key:
+    secure: fpWYH+V7dXgjM65799A1LOTM0GCm5n0bgH4PIGueRfNzzwhkiyEZBIZuAwAsK+5EVj4Wc98rxUTJAsWQC9wtqbf8Pp9XNi6P2NH4Lcmbu9d0N2qdiUaf0g9XiBEFXcKAAaDvT5vNgBoYJuJgpRRnSXww5T57jBe1z9hdwuhdxazpNhWMfrFoHrtxwmrwhMEuGqVQy5lZsqD2iF197AEmxFASXpCMmk9VtI9PhafOQ8a5ifjCCvhTGk76PbAJW/R5hDwgrQSYh0usrXP48GxuwsyOES3z135hjE2r8X5WheXV5Jvw7K/D+ZCUs6X/Cb+7MAPdEzS5ggtFZfXO10Vaz2kDKfn78gBYDrb6dfE4vRjbRn5WaNO/4N4AjElenwAkGDceUPLuUQShSbvgMG8YeEtINPkIEDZP3yhxHCy3QAhgcCY1HnNomzmUZjzUf00aNjDUWYvkQRst75GN9PpPQqmzqRDWq5irRfS+WHzTCM5onI/YSjpEC9Z2NWSGnTmihdFIslG5vHXLihJxhpIWAaGINAkOQvw7Vo7cl3ef9DPUrboRDP2fmodjc01rRnMg72OwXUMvSMMx0ga0VPccfgBUD0v5w0FDYYQEeArY5DHOoCqneRRoMinLY1lpYWuvf5OcpuzF+vvywnc5Xp9mXhzdiA7cn46W1GLseGNCX5s=
+  skip_cleanup: true
   file:
-    - nagios-plugins-onedata-3.2.0-1.el${OS_MAJOR_VERSION}.noarch.rpm
+    - nagios-plugins-onedata-${TRAVIS_TAG}-1.el${OS_MAJOR_VERSION}.noarch.rpm
   on:
     tags: true
 after_deploy:
