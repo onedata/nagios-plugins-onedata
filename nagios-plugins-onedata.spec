@@ -1,8 +1,9 @@
 %define dir %{_libdir}/argo-monitoring/probes/org.onedata
+%global version {{version}}
 
 Summary: Nagios plugins for Onedata services
 Name: nagios-plugins-onedata
-Version: 3.2.0
+Version: %{version}
 Release: 1%{?dist}
 License: ASL 2.0
 Group: Network/Monitoring

@@ -19,7 +19,7 @@ before_install:
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
   - sudo apt-get update
-  - sudo apt-get -y install docker-ce
+  - sudo apt-get -y install docker-ce git
   - docker --version
 install:
   - gem install mdl
@@ -29,12 +29,13 @@ before_script:
   - shellcheck -e SC2034 -e SC2181 src/check_oneprovider
   - shellcheck -e SC2034 -e SC2181 src/check_onezone
   - docker build -t onedata-nagios-test -f docker/Dockerfile.nginx .
+  - export GIT_TAG=$(git describe --tags --always)
 script:
 # Actual testing of the product
 # First, start the build container
   - docker run --name build_container -d -ti -v $PWD:/tmp -w /tmp $OS_NAME:$OS_MAJOR_VERSION /bin/bash -c 'while true ; do sleep 1000 ; done'
 # Now, install prerequisites for the build
-  - docker exec -i -w /root build_container yum install -y rpm-build make
+  - docker exec -i -w /root build_container yum install -y rpm-build make git
 # and ensure the build paths are present
   - docker exec -i -w /root build_container bash -c 'mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}'
 # make the tarball
@@ -44,7 +45,7 @@ script:
 # now build the rpm
   - docker exec -i -w /tmp build_container rpmbuild -bb nagios-plugins-onedata.spec
 # and install it
-  - docker exec -i -w /root/rpmbuild/RPMS/noarch build_container rpm -Uvh nagios-plugins-onedata-${TRAVIS_TAG}-1.el${OS_MAJOR_VERSION}.noarch.rpm
+  - docker exec -i -w /root/rpmbuild/RPMS/noarch build_container rpm -Uvh nagios-plugins-onedata-${GIT_TAG}-1.el${OS_MAJOR_VERSION}.noarch.rpm
 # now see if it runs
   - docker exec -ti build_container bash /usr/lib64/argo-monitoring/probes/org.onedata/check_onezone -h
 # if it works, get the rpm we just built to the shared volume
@@ -52,9 +53,6 @@ script:
 #  - tests/test.sh
 before_cache:
 after_success:
-# create the rpm with the correct name, pulling out version and OS
-# WIP on https://github.com/onedata/nagios-plugins-onedata/issues/8
-  - echo "not implemented yet"
 after_failure:
 before_deploy:
 deploy:
